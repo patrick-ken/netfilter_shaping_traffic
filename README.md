@@ -6,7 +6,7 @@ This module is able to replace standart tool for managing traffic in linux (I me
 The main idea is changing window value in ACK packets on edge-gateway. 
 
 Usage:
-#make
-#insmod hello.ko
+$sudo make
+$sudo insmod hello.ko
 
 
