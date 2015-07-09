@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+#Packet sniffer in python for Linux
+#Sniffs only incoming TCP packet
+ 
+import socket, sys
+from struct import *
+from time import sleep
+import os
+ 
+#create an INET, STREAMing socket
+try:
+    s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x003))
+except socket.error , msg:
+    print 'Socket could not be created. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
+    sys.exit()
+rwnd_file = open('rwnd.txt', 'w+')
+speed_file = open('speed.txt', 'w+')
+RXPREV = -1
+f = open('/sys/class/net/eth0/statistics/rx_bytes', 'r')
+RX = int(f.readlines()[0])
+f.close()
+flag = 1
+source_ip = '1.1.1.1'
+# receive a packet
+try:
+	while True:
+	    packet = s.recvfrom(65565)
+	    
+	    #packet string from tuple
+	    packet = packet[0]
+	     
+	    #take first 20 characters for the ip header
+	    ip_header = packet[0:20]
+	    iph = unpack('!BBHHHBBH4s4s' , ip_header)
+	    print socket.inet_ntoa(iph[9])
+	    if source_ip == socket.inet_ntoa(iph[8]):
+		rate = open('/sys/class/net/eth2/statistics/rx_bytes', 'r')
+		#now unpack them :)
+
+		version_ihl = iph[0]
+		version = version_ihl >> 4
+		ihl = version_ihl & 0xF
+
+		iph_length = ihl * 4
+
+		tcp_header = packet[iph_length:iph_length + 20]
+
+		#now unpack them :)
+		tcph = unpack('!HHLLBBHHH' , tcp_header)
+
+		window = tcph[6]
+		rwnd_file.write(str(window) + ' ')
+
+		RX = int(rate.readlines()[0])
+		speed_file.write(str(RX - RXPREV) + ' ')
+
+		RXPREV = RX
+		sleep(1)
+
+except KeyboardInterrupt:
+	rwnd_file.seek(-1, os.SEEK_END)
+	rwnd_file.truncate()
+
+	speed_file.seek(-1, os.SEEK_END)
+	speed_file.truncate()

@@ -1,0 +1,29 @@
+#!/usr/bin/python
+from os import path
+import matplotlib.pyplot as plt
+from sys import argv
+
+filename = argv[1]
+if filename and path.isfile(filename):
+	f = open(filename, "r")
+try:
+		#myvalues = [] #myvalues = [[],[]]
+		i = 0
+		#for line in f:
+		myvalues = map(int, f.readline().split())
+		print myvalues
+			#for char in values:
+			#	if i < 2:
+			#		myvalues[i].append(int(char))
+			#i += 1
+		
+		#print myvalues[0], myvalues[1]
+		plt.plot(myvalues) #, myvalues[1])
+		plt.ylabel('value')
+		plt.xlabel('time')
+		plt.show()
+		f.close()
+except KeyboardInterrupt:
+	f.close()
+	print "Pressed Ctrl+C. Bye, bye!"
+	
